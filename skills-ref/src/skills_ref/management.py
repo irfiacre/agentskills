@@ -3,10 +3,10 @@ from collections import defaultdict
 from pathlib import Path
 import shutil
 
-from .validator import check_if_skill_exist
+from .validator import check_if_skill_exist, _validate_name, _validate_description
 from .parser import get_local_supporting_agents
 from .utils import build_skill_instructions_template, load_supporting_agents
-from .errors import SkillError
+from .errors import SkillError, ValidationError
 
 
 def create_skill(skill_name: str, skill_description: str, project_level: bool = True) -> list:
@@ -21,6 +21,12 @@ def create_skill(skill_name: str, skill_description: str, project_level: bool = 
     Returns:
         dict: dict of skill configs where the skill is saved per available agent.
     """
+    if errors := _validate_name(skill_name):
+        raise ValidationError("Invalid skill name",errors=errors)
+
+    if errors := _validate_description(skill_name):
+        raise ValidationError("Invalid skill name",errors=errors)
+
     if skill_info := check_if_skill_exist(skill_name=skill_name, project_level=project_level):
         return skill_info
 
@@ -51,6 +57,9 @@ def edit_skill(skill_name: str, description: str = None, project_level: bool = T
     Returns:
         bool: Action completed successfully.
     """
+    if errors := _validate_description(skill_name):
+        raise ValidationError("Invalid skill name",errors=errors)
+
     if not (skill_files := check_if_skill_exist(skill_name=skill_name, project_level=project_level)):
           raise SkillError(f'Skill {skill_name}, not found.')
           
